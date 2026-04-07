@@ -1,0 +1,100 @@
+# Distil PII Redactor - OpenClaw Skill
+
+Locally redact PII from text using a fine-tuned 1B parameter model. Your sensitive data never leaves your machine -- the frontier LLM powering OpenClaw never sees the raw text. Only the local model processes it, and only the redacted output is returned.
+
+## Prerequisites
+
+- **llama.cpp** installed (`brew install llama.cpp` on macOS, or [build from source](https://github.com/ggerganov/llama.cpp#build))
+- **Python 3**
+- **~5 GB disk space** for the GGUF model
+
+## Quick Start with OpenClaw
+
+1. Copy this folder to `~/.openclaw/skills/distil-pii-redactor/`
+   -- or paste the GitHub repo URL into your OpenClaw chat.
+
+2. Tell OpenClaw: **"set up the PII redactor"**
+   (this downloads the model and starts the local server)
+
+3. Use it: **"redact this: Hi I'm John Smith, john@smith.com, call me at 555-123-4567"**
+
+## Standalone Usage (without OpenClaw)
+
+```bash
+# One-time setup: download model + start server
+bash scripts/setup.sh
+
+# Redact text (via argument or stdin)
+python scripts/redact.py "Hi, I'm John Smith. Reach me at john.smith@example.com or 555-123-4567."
+cat examples/sample_input.txt | python scripts/redact.py
+
+# Stop the server when done
+bash scripts/stop.sh
+```
+
+## Example
+
+**Input** ([examples/sample_input.txt](examples/sample_input.txt)):
+```
+Hi, my name is Sarah Johnson and I need help with my recent order #ORD-29481.
+
+You can reach me at sarah.johnson@gmail.com or call me at +1 (415) 555-7823.
+I'm a 34-year-old married woman living at 742 Evergreen Terrace, Apt 3B,
+Springfield, IL 62704.
+
+My credit card ending in 4111 1111 1111 1234 was charged twice. My SSN is
+198-76-5432 and my patient ID is MRN-00284713. My IBAN is
+GB29 NWBK 6016 1331 9268 19.
+
+Please resolve this as soon as possible. I'm a long-time customer of Acme Corp
+and I expect better service.
+```
+
+**Output** ([examples/sample_output.json](examples/sample_output.json)):
+```json
+{
+    "redacted_text": "Hi, my name is [PERSON] and I need help with my recent order #ORD-29481.\n\nYou can reach me at [EMAIL] or call me at [PHONE]. I'm a [AGE_YEARS:34]-year-old [MARITAL_STATUS] woman living at [ADDRESS].\n\nMy credit card ending in 4111 1111 1111 1234 was charged twice. My SSN is [SSN] and my patient ID is [UUID]. My IBAN is [IBAN_LAST4:6819].\n\nPlease resolve this as soon as possible. I'm a long-time customer of Acme Corp and I expect better service.\n",
+    "entities": [
+        {"value": "Sarah Johnson", "replacement_token": "[PERSON]", "reason": "person name"},
+        {"value": "sarah.johnson@gmail.com", "replacement_token": "[EMAIL]", "reason": "email address"},
+        {"value": "+1 (415) 555-7823", "replacement_token": "[PHONE]", "reason": "phone number"},
+        {"value": "34", "replacement_token": "[AGE_YEARS:34]", "reason": "age"},
+        {"value": "married", "replacement_token": "[MARITAL_STATUS]", "reason": "marital status"},
+        {"value": "742 Evergreen Terrace, Apt 3B, Springfield, IL 62704", "replacement_token": "[ADDRESS]", "reason": "full address with street and unit number"},
+        {"value": "198-76-5432", "replacement_token": "[SSN]", "reason": "SSN number"},
+        {"value": "MRN-00284713", "replacement_token": "[UUID]", "reason": "patient ID (person-scoped system identifier)"},
+        {"value": "GB29 NWBK 6016 1331 9268 19", "replacement_token": "[IBAN_LAST4:6819]", "reason": "IBAN (keep last-4 only)"}
+    ]
+}
+```
+
+## Supported PII Types
+
+| Type | Replacement Token | Example |
+|------|-------------------|---------|
+| Person names | `[PERSON]` | John Smith |
+| Email addresses | `[EMAIL]` | john@example.com |
+| Phone numbers | `[PHONE]` | 555-123-4567 |
+| Street addresses | `[ADDRESS]` | 123 Main St, Apt 4B |
+| Social Security numbers | `[SSN]` | 123-45-6789 |
+| National IDs | `[ID]` | PESEL, NIN, Aadhaar |
+| System identifiers | `[UUID]` | Patient/customer IDs |
+| Credit cards | `[CARD_LAST4:####]` | Last 4 digits preserved |
+| IBANs | `[IBAN_LAST4:####]` | Last 4 digits preserved |
+| Gender | `[GENDER]` | male, female, non-binary |
+| Age | `[AGE_YEARS:##]` | "I'm 29 years old" |
+| Race/ethnicity | `[RACE]` | Self-identification |
+| Marital status | `[MARITAL_STATUS]` | married, single, etc. |
+
+## Alternative Models
+
+The default model is the 1B parameter version. You can swap it by editing `scripts/setup.sh`:
+
+- **[Distil-PII-Llama-3.2-3B](https://huggingface.co/distil-labs/Distil-PII-Llama-3.2-3B-Instruct-gguf)** -- higher accuracy (0.82), larger download
+- **[Distil-PII-gemma-3-270m](https://huggingface.co/distil-labs/Distil-PII-gemma-3-270m-it-gguf)** -- smaller footprint (270M params), lower accuracy (0.73)
+
+## Links
+
+- [Distil-PII GitHub repo](https://github.com/distil-labs/Distil-PII)
+- [Distil-PII HuggingFace collection](https://huggingface.co/distil-labs)
+- [Distil Labs blog](https://www.distil-labs.com/blog)
