@@ -47,7 +47,13 @@ For longer text, pipe it via stdin:
 echo "text to redact" | python scripts/redact.py
 ```
 
-Return the JSON output to the user as-is.
+By default the script prints only the redacted text (no JSON). To get the full JSON with entities, add `--show-entities`:
+
+```bash
+python scripts/redact.py --show-entities "text to redact"
+```
+
+Return the output to the user as-is.
 
 ## How to stop the server
 

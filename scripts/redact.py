@@ -4,6 +4,7 @@ Sends text to the Distil-PII model running on localhost:8712 and prints
 the redacted JSON to stdout. Uses only the Python standard library.
 """
 
+import argparse
 import json
 import sys
 import urllib.error
@@ -62,7 +63,7 @@ Generate only the solution, do not generate anything else
 <question>Redact provided text according to the task description and return redacted elements.</question>"""
 
 
-def main(text: str):
+def main(text: str, show_entities: bool = False):
     """Send text to the local Distil-PII model and print the redacted JSON."""
     response_format = {
         "type": "json_schema",
@@ -119,21 +120,30 @@ def main(text: str):
         sys.exit(1)
 
     content = result["choices"][0]["message"]["content"]
-    print(content)
+    if show_entities:
+        print(content)
+    else:
+        parsed = json.loads(content)
+        print(parsed["redacted_text"])
 
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        input_text = " ".join(sys.argv[1:])
+    parser = argparse.ArgumentParser(description="Redact PII from text using a local Distil-PII model.")
+    parser.add_argument("text", nargs="*", help="Text to redact (or pipe via stdin)")
+    parser.add_argument("--show-entities", action="store_true",
+                        help="Output full JSON with entities (default: redacted text only)")
+    args = parser.parse_args()
+
+    if args.text:
+        input_text = " ".join(args.text)
     elif not sys.stdin.isatty():
         input_text = sys.stdin.read().strip()
     else:
-        print("Usage: python redact.py \"text to redact\"", file=sys.stderr)
-        print("       echo \"text\" | python redact.py", file=sys.stderr)
+        parser.print_usage(sys.stderr)
         sys.exit(1)
 
     if not input_text:
         print("ERROR: No text provided.", file=sys.stderr)
         sys.exit(1)
 
-    main(text=input_text)
+    main(text=input_text, show_entities=args.show_entities)
