@@ -47,13 +47,15 @@ For longer text, pipe it via stdin:
 echo "text to redact" | python scripts/redact.py
 ```
 
-By default the script prints only the redacted text (no JSON). To get the full JSON with entities, add `--show-entities`:
+Return the output to the user as-is.
+
+### `--show-entities` flag (use sparingly)
+
+Adding `--show-entities` outputs the full JSON including the original PII values. **Only use this when the user explicitly asks to see which entities were detected or needs the mapping for a downstream task.** In normal redaction workflows, omit this flag -- displaying the raw entity values defeats the purpose of PII redaction.
 
 ```bash
 python scripts/redact.py --show-entities "text to redact"
 ```
-
-Return the output to the user as-is.
 
 ## How to stop the server
 
@@ -63,22 +65,14 @@ bash scripts/stop.sh
 
 ## Output format
 
-The script returns structured JSON (enforced via JSON schema) with two fields:
+By default the script prints **only the redacted text** -- PII tokens replace the sensitive data and the original values are never shown:
 
-- `redacted_text`: the input with PII replaced by tokens like `[PERSON]`, `[EMAIL]`, `[PHONE]`, etc.
-- `entities`: array of detected PII items with `value`, `replacement_token`, and `reason` fields.
-
-Example output:
-
-```json
-{
-    "redacted_text": "Hi, my name is [PERSON] and I need help with my recent order #ORD-29481.\n\nYou can reach me at [EMAIL] or call me at [PHONE]. I'm a [AGE_YEARS:34]-year-old [MARITAL_STATUS] woman living at [ADDRESS]...",
-    "entities": [
-        {"value": "Sarah Johnson", "replacement_token": "[PERSON]", "reason": "person name"},
-        {"value": "sarah.johnson@gmail.com", "replacement_token": "[EMAIL]", "reason": "email address"},
-        {"value": "+1 (415) 555-7823", "replacement_token": "[PHONE]", "reason": "phone number"}
-    ]
-}
 ```
+Hi, my name is [PERSON] and I need help with my recent order #ORD-29481.
+
+You can reach me at [EMAIL] or call me at [PHONE]. I'm a [AGE_YEARS:34]-year-old [MARITAL_STATUS] woman living at [ADDRESS]...
+```
+
+With `--show-entities`, the script returns full JSON including original PII values (see flag note above for when this is appropriate).
 
 See `examples/` for full input/output samples.
