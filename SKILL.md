@@ -49,9 +49,9 @@ echo "text to redact" | python scripts/redact.py
 
 Return the output to the user as-is.
 
-### `--show-entities` flag (use sparingly)
+### `--show-entities` flag (debugging only)
 
-Adding `--show-entities` outputs the full JSON including the original PII values. **Only use this when the user explicitly asks to see which entities were detected or needs the mapping for a downstream task.** In normal redaction workflows, omit this flag -- displaying the raw entity values defeats the purpose of PII redaction.
+Adding `--show-entities` outputs the full JSON including the original PII values. **Only use this when debugging the skill itself (e.g. verifying entity detection accuracy).** Do not use it in normal redaction workflows, even if the user asks to "analyse" or "review" the results -- displaying the raw entity values defeats the purpose of PII redaction.
 
 ```bash
 python scripts/redact.py --show-entities "text to redact"
