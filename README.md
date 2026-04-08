@@ -8,10 +8,21 @@ Locally redact PII from text using a fine-tuned 1B parameter model. Your sensiti
 - **Python 3**
 - **~5 GB disk space** for the GGUF model
 
+## Install from ClawHub
+
+```bash
+clawhub install distil-open-claw-pii
+```
+
+Or install directly in your OpenClaw chat:
+
+```
+/install distil-open-claw-pii
+```
+
 ## Quick Start with OpenClaw
 
-1. Copy this folder to `~/.openclaw/skills/distil-pii-redactor/`
-   -- or paste the GitHub repo URL into your OpenClaw chat.
+1. Install the skill (see above), or copy this folder to `~/.openclaw/skills/distil-pii-redactor/`
 
 2. Tell OpenClaw: **"set up the PII redactor"**
    (this downloads the model and starts the local server)
@@ -95,6 +106,7 @@ The default model is the 1B parameter version. You can swap it by editing `scrip
 
 ## Links
 
+- [ClawHub: distil-open-claw-pii](https://clawhub.ai/skills/distil-open-claw-pii)
 - [Distil-PII GitHub repo](https://github.com/distil-labs/Distil-PII)
 - [Distil-PII HuggingFace collection](https://huggingface.co/distil-labs)
 - [Distil Labs blog](https://www.distil-labs.com/blog)
