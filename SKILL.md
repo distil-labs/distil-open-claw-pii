@@ -1,7 +1,7 @@
 ---
 name: distil-pii-redactor
 description: Redact PII from text locally using a fine-tuned 1B SLM. Text never leaves your machine. Handles names, emails, phones, addresses, SSNs, credit cards, IBANs, and more.
-version: 1.1.0
+version: 1.1.1
 tools:
   - Bash
 ---
